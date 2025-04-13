@@ -23,6 +23,7 @@ class Report:
     title: str
     items: List[ReportItem]
     overview: str = ""
+    usage: str = ""
 
 
 def generate_markdown_report(report: Report) -> str:
@@ -31,6 +32,11 @@ def generate_markdown_report(report: Report) -> str:
         "",
         report.overview
     ]
+    if report.usage:
+        lines.append(f"## Usage")
+        lines.append(report.usage)
+
+    lines.append("# Results")
 
     for item in report.items:
         lines.append(f"## {item.title}")

@@ -5,6 +5,9 @@ from dataclasses import dataclass
 class JobTitle:
     title: str
 
+    def __str__(self):
+        return self.title
+
 
 @dataclass
 class JobTitleClassificationPath:
@@ -22,3 +25,6 @@ class JobTitleClassificationPath:
 class Advert:
     title: JobTitle
     contents: [str]
+
+    def __str__(self):
+        return "\n\n".join([str(self.title)] + self.contents)

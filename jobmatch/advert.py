@@ -21,7 +21,7 @@ def load_dataset() -> AdvertDataset:
 
     ds_name = "armenian-online-job-postings"
     if cache.exists(ds_name):
-        adverts = cache.load_np(ds_name)
+        adverts = cache.get(ds_name)
         AdvertDataset(adverts)
 
     path = kagglehub.dataset_download(f"udacity/{ds_name}")
@@ -39,7 +39,7 @@ def load_dataset() -> AdvertDataset:
         adverts.append(advert)
 
     adverts = np.array(adverts)
-    cache.store_np(ds_name, adverts)
+    cache.set(ds_name, adverts)
 
     return AdvertDataset(adverts)
 
