@@ -1,13 +1,14 @@
 import unittest
 
+import jobmatch.skills as skills
+import jobmatch.soc as soc
 import numpy as np
+from jobmatch.model_jobbert import JobBert
 from sentence_transformers.util import cos_sim
 
 import jobmatch.advert as advert
-import jobmatch.skills as skills
-import jobmatch.soc as soc
+from jobmatch.advert import Advert
 from jobmatch.cache import Cache
-from jobmatch.model_jobbert import JobBert
 from report import *
 
 cache = Cache()
@@ -51,7 +52,7 @@ class TestJobBert(unittest.TestCase):
     def test_soc_match(self):
         random_advert: Advert = self.adverts.choice()
 
-        advert_text = f"{random_advert.title}:\n{random_advert.content}"
+        advert_text = f"{random_advert.title}:\n{random_advert.contents}"
         matches = self.match(advert_text, self.title_embeddings)
 
         report = Report("JobBERT match", [self.make_report_item(random_advert, matches)])
@@ -63,7 +64,7 @@ class TestJobBert(unittest.TestCase):
         for i in range(count):
             random_advert: Advert = self.adverts.choice()
 
-            advert_text = f"{random_advert.title}:\n{random_advert.content}"
+            advert_text = f"{random_advert.title}:\n{random_advert.contents}"
             matches = self.match(advert_text, self.title_embeddings)
 
             report_items.append(self.make_report_item(random_advert, matches))
@@ -99,7 +100,7 @@ class TestJobBert(unittest.TestCase):
         for i in range(count):
             random_advert: Advert = self.adverts.choice()
 
-            advert_text = f"{random_advert.title}:\n{random_advert.content}"
+            advert_text = f"{random_advert.title}:\n{random_advert.contents}"
             matches = self.match_skills(advert_text, self.skills_embeddings)
 
             report_items.append(self.make_report_item(random_advert, matches))
@@ -117,6 +118,6 @@ class TestJobBert(unittest.TestCase):
 
         return ReportItem(
             title=ad.title.get_title(),
-            content=ad.content,
+            content=ad.contents,
             results=[ReportResult(title="Top 5 job title matches for the advert", content=table)]
         )

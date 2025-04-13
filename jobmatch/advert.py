@@ -1,17 +1,8 @@
 import numpy as np
+from jobmatch.job import JobTitleClassificationPath
 from numpy.typing import NDArray
 
 from jobmatch.cache import Cache
-from jobmatch.job import JobTitleClassificationPath
-
-
-class Advert:
-    title: JobTitleClassificationPath
-    content: [str]
-
-    def __init__(self, title: JobTitleClassificationPath, content: str):
-        self.title = title
-        self.content = content
 
 
 class AdvertDataset:
