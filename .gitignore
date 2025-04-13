@@ -1,1 +1,6 @@
 .idea
+.venv
+.DS_Store
+*.npy
+.cache
+.report
