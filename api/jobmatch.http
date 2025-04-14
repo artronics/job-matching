@@ -1,0 +1,9 @@
+### root
+GET http://localhost:8000/
+
+### Find a match for a job title
+GET http://localhost:8000/match?text=Java
+
+### Find a match for a job title returning N results
+GET http://localhost:8000/match?text=Software consultant&limit=30
+

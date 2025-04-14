@@ -13,8 +13,6 @@ class BaseModel:
     def __init__(self, name: str, batch_size: int = 8):
         self.name = name
         self.model = SentenceTransformer(name)
-        # self.model = AutoModel.from_pretrained("TechWolf/ConTeXT-Skill-Extraction-base")
-        # tokenizer = AutoTokenizer.from_pretrained("TechWolf/ConTeXT-Skill-Extraction-base")
         self.batch_size = batch_size
 
     def encode(self, texts, name: str = ""):

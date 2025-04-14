@@ -1,0 +1,12 @@
+services:
+  job-match:
+    container_name: job-match
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - "./jobmatch/.cache:/app/jobmatch/.cache"
+#      - type: volume
+#        source: ./jobmatch/.cache
+#        target: /app/jobmatch/.cache
+

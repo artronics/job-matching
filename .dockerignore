@@ -1,0 +1,4 @@
+.venv
+.idea
+jobmatch/.cache
+jobmatch/data/online-job-postings.csv
