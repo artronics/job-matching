@@ -7,8 +7,7 @@ import pandas as pd
 from sentence_transformers.util import cos_sim
 from tqdm.auto import tqdm
 
-import job_datasets as datasets
-from jobmatch import DATA_DIR
+from jobmatch import job_datasets as datasets, DATA_DIR
 from jobmatch.cache import Cache
 from jobmatch.embeddings import make_embeddings
 from jobmatch.llm import JobBertV2Local
@@ -23,7 +22,7 @@ soc_titles = np.array([t.get_job_title().title for t in soc_ds])
 soc_embeddings = make_embeddings(model, f"soc_only_titles", soc_titles)
 
 
-def _match(text: str, limit: int) -> TitleMatchingResponse:
+def match_text_to_soc(text: str, limit: int) -> ([str], [float]):
     """Given an input `text`, we sort all the SOC codes based on similarity to the text"""
     text_emb = model.encode([text])[0]
     similarities = cos_sim(text_emb, soc_embeddings)[0].numpy()
@@ -31,10 +30,8 @@ def _match(text: str, limit: int) -> TitleMatchingResponse:
 
     titles = [item[0] for item in similarities]
     scores = [float(item[1]) for item in similarities]  # We need to convert float32 to float
+    return titles, scores
 
-    matching = Matching(titles, scores)
-
-    return TitleMatchingResponse(text, matching)
 
 
 class Item:
@@ -73,14 +70,16 @@ def process(filename) -> List[Item]:
         jt = {}
         if isinstance(jobTitles, str):
             for jobTitle in jobTitles.split(','):
-                jt_matchings = _match(jobTitle, matching_limit)
-                jt.update(jt_matchings.as_dict())
+                titles, scores = match_text_to_soc(jobTitle, matching_limit)
+                matching = Matching(titles, scores)
+                jt.update(TitleMatchingResponse(jobTitle, matching).as_dict())
 
         pj = {}
         if isinstance(preferredJobs, str):
             for preferredJob in preferredJobs.split(','):
-                pj_matchings = _match(preferredJob, matching_limit)
-                pj.update(pj_matchings.as_dict())
+                titles, scores = match_text_to_soc(preferredJob, matching_limit)
+                matching = Matching(titles, scores)
+                pj.update(TitleMatchingResponse(preferredJob, matching).as_dict())
 
         socs.append(Item(jt, pj))
 
