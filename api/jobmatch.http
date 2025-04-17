@@ -7,3 +7,27 @@ GET http://localhost:8000/match?text=Java
 ### Find a match for a job title returning N results
 GET http://localhost:8000/match?text=Software consultant&limit=30
 
+
+### Send claimant json
+POST {{base_url}}/claimant
+Content-Type: application/json
+
+{
+    "contentData": {
+      "hasWorkHistory": true,
+      "modesOfTravel":["WALK", "PUBLIC_TRANSPORT"],
+      "preferredJobs": {
+        "yesNo": true,
+        "values": ["Reception", "Admin"]
+      },
+      "confidenceLevel": "EXTREMELY_CONFIDENT",
+      "hasCV": true,
+      "canDoJobs": ["Reception", "Admin"],
+      "qualifications": {
+        "values": ["GCSE_OR_EQUIVALENT"]
+      }
+    }
+}
+
+### Downalod claimant file
+GET {{base_url}}/claimant-file

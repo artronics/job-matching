@@ -1,33 +1,27 @@
-import pathlib
+from dataclasses import asdict
 
-import numpy as np
 import uvicorn
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 from sentence_transformers.util import cos_sim
 
-import jobmatch.job_datasets as datasets
+from jobmatch import DATA_DIR
 from jobmatch.cache import Cache
-from jobmatch.embeddings import make_embeddings
-from jobmatch.llm import BaseModel
-
-prj_path = pathlib.Path(__file__).parent.parent.resolve()
+from jobmatch.llm import JobBertV2Local
+from jobmatch.models import Claimant, Matching, TitleMatchingResponse
 
 app = FastAPI()
 cache = Cache()
 
 
-class JobBertV2Local(BaseModel):
-    def __init__(self, batch_size: int = 8):
-        path_to_model = str(prj_path / "models" / "JobBERT-v2")
-        super().__init__(path_to_model, batch_size)
-
-
 model = JobBertV2Local(batch_size=8)
 
 # Loading SOC codes and calculating embeddings. This process only needs to be done once
-soc_ds = datasets.make_soc_job_titles().dataset
-soc_titles = np.array([t.get_job_title().title for t in soc_ds])
-soc_embeddings = make_embeddings(model, f"soc_only_titles", soc_titles)
+# soc_ds = datasets.make_soc_job_titles().dataset
+# soc_titles = np.array([t.get_job_title().title for t in soc_ds])
+# soc_embeddings = make_embeddings(model, f"soc_only_titles", soc_titles)
+soc_embeddings = []
+soc_titles = []
 
 
 def _match(text: str) -> [(str, float)]:
@@ -37,14 +31,6 @@ def _match(text: str) -> [(str, float)]:
     return sorted(zip(soc_titles, similarities), key=lambda x: x[1], reverse=True)
 
 
-class TitleMatchResponse:
-    """Response object contains **sorted** titles. Scores are provided as a separate list."""
-    titles: [str]
-    scores: [float]
-
-    def __init__(self, titles: [str], scores: [float]):
-        self.titles = titles
-        self.scores = scores
 
 
 @app.get("/match")
@@ -54,7 +40,29 @@ async def match(text: str, limit: int = 10):
     titles = [item[0] for item in similarities]
     scores = [float(item[1]) for item in similarities]  # We need to convert float32 to float
 
-    return TitleMatchResponse(titles, scores)
+    matching = Matching(titles, scores)
+    return TitleMatchingResponse(text, matching)
+
+
+@app.post("/claimant")
+async def claimant(claimant: Claimant):
+    t = ["foo", "bar"]
+    s = [2.3, 3.3]
+    m = Matching(t, s)
+    tr = TitleMatchingResponse("org", m)
+    tr1 = TitleMatchingResponse("org", m)
+    ss = {**asdict(tr), **asdict(tr1)}
+
+    updated = claimant.update_socs(ss)
+
+    return updated
+
+
+@app.get("/claimant-file")
+async def download_claimant_file():
+    filename = "claimants.zip"
+
+    return FileResponse(DATA_DIR / filename, media_type='application/octet-stream', filename=filename)
 
 
 @app.get("/")

@@ -1,9 +1,12 @@
+import pathlib
+
 import numpy as np
 import torch
 from sentence_transformers import SentenceTransformer
 from sentence_transformers.util import batch_to_device
 from tqdm.auto import tqdm
 
+prj_path = pathlib.Path(__file__).parent.parent.resolve()
 
 class BaseModel:
     name: str
@@ -16,12 +19,13 @@ class BaseModel:
         self.batch_size = batch_size
 
     def encode(self, texts, name: str = ""):
-        print(f"Encoding {name} with {len(texts)} item(s)...")
+        if len(texts) > 10:
+            print(f"Encoding {name} with {len(texts)} item(s)...")
         sorted_indices = np.argsort([len(text) for text in texts])
         sorted_texts = [texts[i] for i in sorted_indices]
 
         embeddings = []
-        for i in tqdm(range(0, len(sorted_texts), self.batch_size)):
+        for i in tqdm(range(0, len(sorted_texts), self.batch_size),  disable=(len(sorted_texts)<10)):
             batch = sorted_texts[i:i + self.batch_size]
             embeddings.append(self._encode_batch(batch))
 
@@ -46,6 +50,12 @@ class BaseModel:
 class JobBertV2(BaseModel):
     def __init__(self, batch_size: int = 8):
         super().__init__("TechWolf/JobBERT-v2", batch_size)
+
+class JobBertV2Local(BaseModel):
+    def __init__(self, batch_size: int = 8):
+        path_to_model = str(prj_path / "models" / "JobBERT-v2")
+        super().__init__(path_to_model, batch_size)
+
 
 
 class ContextSkillExtraction(BaseModel):
